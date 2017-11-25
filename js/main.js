@@ -33,6 +33,8 @@ function ArrayCircle(data) {
 		// In that case we have to count not from 0 but from the end of the array.
 		// e.g. in an array of 3 elements: -1->2, -2->1, -3->0
 		if (targetIndex < 0) targetIndex = length - targetIndex;
+		// If step was positive but greater than length - 1, apply the remainder operation to it to put it in range
+		if (targetIndex >= length) targetIndex %= length;
 		// Return the element with the corresponding index
 		return this.data[targetIndex];
 	}
@@ -42,97 +44,191 @@ function ArrayCircle(data) {
 	this.prev = this.step.bind(this, -1);
 }
 
-// A general class encompassing the entire in-game mechanics
-function PaperScissorsRock() {
+function paperScissorsRock() {
 
-	// A abstract class for a player
-	function Player(name = 'Player', game) {
+	function Participant(type = 'Computer', name = type) {
+		this.type = type;
 		this.name = name;
-		// this.score = 0;
-		// A reference back to the game object to which the player belongs
-		this.game = game;
-		// This is undefined because a computer and a human will provide input differently
-		this.choose = undefined;
-	}
-
-	// Computer player class
-	function ComputerPlayer() {
-		// Inherit from the Player class
-		Player.call(this, arguments);
-		// Choose one of the available options randomly
-		this.choose = pickRandomElementFromArray.bind(null, this.game.availableChoices);
-	}
-
-	// Human player class
-	function HumanPlayer() {
-		// Inherit from the Player class
-		Player.call(this, arguments);
-		// Choose one of the available options according to user input
-		this.choose = function () {this.game.userInterface.query(this)};
+		this.score = 0;
+		if (this.type != 'Computer') {
+			document.querySelectorAll('.human-name').forEach(function(node) {node.innerHTML = this.name;}, this);
 		}
 	}
 
-	// Round class
-	function Round(game) {
-		// Retain a reference back to the game in which this round happens
-		this.game = game;
-		// Create an array of players combined with their choices in this round (obtain the choices, too)
-		this.result = this.game.players.map(function(player) {
-			return {
-				'player': player,
-				choice: player.choose,
-			};
-		};
-		// Once all choices have been obtained, calculate the score for this round for all players by comparing their choices with those of others
-		this.result.forEach(function(element) {
-			element.score = calculateScore;
-			// Affect the total scores in the player objects
-			// element.player.score += element.score;
+	const options = new ArrayCircle(['paper', 'scissors', 'rock']);
+	var player;
+	var computer;
+	var round;
+	var roundTable = document.querySelector('#table');
+	var roundTBody;
+	var roundRow;
+	var roundCells;
+	var roundPlaceholder;
+
+	function resetRounds() {
+		round = 0;
+		if (roundTBody) roundTable.removeChild(roundTBody);
+		roundTBody = document.createElement('tbody');
+		roundTable.appendChild(roundTBody);
+		roundRow = undefined;
+		roundCells = undefined;
+		roundPlaceholder = undefined;
+	}
+
+	function nextRound() {
+		if (roundRow) roundRow.className = '';
+		var oldRoundRow = roundRow;
+		round += 1;
+		roundRow = document.createElement('tr');
+		roundTBody.insertBefore(roundRow, oldRoundRow);
+		roundCells = [];
+		for (let i = 0; i < 3; i++) {
+			roundCells.push(document.createElement('td'));
+			roundRow.appendChild(roundCells[i]);
+		}
+		roundRow.className = "current";
+		roundPlaceholder = document.createElement('div');
+		roundPlaceholder.className = "choice-button";
+		roundCells[0].appendChild(roundPlaceholder);
+		roundCells[1].innerHTML = round;
+	}
+
+	function updateScore(side, change) {
+		var scoreOutput = document.querySelectorAll('.' + side + '-score');
+		var participant = (side == 'human' ? player : computer);
+		participant.score += change;
+		scoreOutput.forEach(function (node) {
+			node.innerHTML = participant.score;
 		});
-		
-		// Find this round's number in the game (or return null if somehow absent)
-		this.getNumber = function () {return this.game.rounds.indexOf(this) + 1 || null;}
-
-		// A function that takes one object from the result array and compares it against all others, adding a score property to every element
-		function calculateScore(current, index, array) {
-			var score = 0;
-			// Compare to all...
-			for (i in all) {
-				var comparingAgainst = array[i];
-				// ... except for itself, of course!
-				if (comparingAgainst == current) continue;
-				// If current.choice is directly after comparingAgainst.choice in the game.availableChoices circle-array, it's a win
-				if (current.choice == this.game.availableChoices.next(comparingAgainst.choice)) score++;
-				// If current.choice is directly before comparingAgainst.choice in the game.availableChoices circle-array, it's a loss
-				if (current.choice == this.game.availableChoices.prev(comparingAgainst.choice)) score--;
-			}
-			return score;
-		}
+		if (participant.score >= 10) return {
+			winner: participant,
+			loser: (participant == player ? computer : player),
+		};
 	}
 
-	function Game(userInterface, ...players = []) {
-		// The user interface that will control this game
-		this.userInterface = userInterface;
-		// An array of players who take part in this game
-		this.players = players;
-		// An array containing the rounds that have taken place
-		this.rounds = [];
+	function act(choice) {
 
-		this.initialize = function () {
-			this.players.forEach(function(player) {
-				// Assign all the backward refernces in the player objects the game contains to itself
-				obj.game = this;
+		function animateChoice(actor, choice) {
+			var selection = document.querySelectorAll('.' + actor + '-choice.' + choice)[0];
+			if (selection.classList.contains('shrink-and-fade-in')) {
+				selection.classList.remove('shrink-and-fade-in');
+				setTimeout(function () {selection.classList.add('shrink-and-fade-in');}, 10);
+			} else {
+				selection.classList.add('shrink-and-fade-in');
+			}
+			setTimeout(function() {
+				selection.classList.remove('shrink-and-fade-in');
+			}, 3000);
+			var img = selection.getElementsByTagName('img')[0].cloneNode(false);
+			var div = document.createElement('div');
+			div.className = 'choice-button ' + choice;
+			div.appendChild(img);
+			if (actor == 'human') {
+				roundCells[0].replaceChild(div, roundPlaceholder);
+			}
+			else {
+				roundCells[2].appendChild(div);
+			}
+		}
+
+		function getComputerChoice() {
+			return pickRandomElementFromArray(options.data);
+		}
+
+		function calculateScore() {
+			if (choice == options.next(computerChoice)) {
+				return {
+					won: 'human',
+					lost: 'computer',
+				};
+			}
+			if (computerChoice == options.next(choice)) {
+				return {
+					won: 'computer',
+					lost: 'human',
+				};
+			}
+			return 'draw';
+		}
+
+		function conclude(endScore) {
+			var panel = document.querySelector('#conclusion');
+			var heading = document.querySelector('#conclusion-heading');
+			var text = document.querySelector('#conclusion-text');
+			if (endScore.winner == player) {
+				heading.innerHTML = "Congratulations!";
+				panel.classList.add('panel-success');
+			} else {
+				heading.innerHTML = "Sorry...";
+				panel.classList.add('panel-danger');
+			}
+			text.innerHTML = endScore.winner.name + " has won over " + endScore.loser.name
+				+ " with a score of " + endScore.winner.score + " to " + endScore.loser.score + ".";
+			panel.classList.remove('hidden');
+			document.querySelectorAll('.side-panel').forEach(function (node) {node.classList.add('hidden');});
+			document.querySelector('#play-again').addEventListener('click', function() {
+				panel.classList.add('hidden');
+				document.querySelectorAll('.side-panel').forEach(function (node) {node.classList.remove('hidden');});
+				document.querySelector('#game').classList.add('hidden', 'opacity-0');
+				document.querySelector('#start').click();
+				updateScore('human', 0);
+				updateScore('computer', 0);
+				setTimeout(function () {
+					document.querySelector('#game').classList.remove('hidden');
+				}, 100);
+				setTimeout(function () {
+					document.querySelectorAll('.human-choice').forEach(function (node) {
+						node.classList.remove('shrink-and-fade-in');
+					}, 5);
+					document.querySelector('.human').classList.remove('win', 'lose');
+						document.querySelector('.computer').classList.remove('win', 'lose');
+				})
 			});
 		}
 
-		this.newRound = function() {
-			this.rounds.push(new Round(this));
-		};
+		animateChoice('human', choice);
+		var computerChoice = getComputerChoice();
+		animateChoice('computer', computerChoice);
 
-		this.getScore = this.rounds.reduce(function (accumulator, current) {
-			accumulator.score + current.score;
-		});
+		var score = calculateScore();
+		var endScore;
+		if (score != 'draw') {
+			endScore = updateScore(score.won, +1);
+			document.querySelectorAll('.' + score.won)[0].classList.add('win');
+			document.querySelectorAll('.' + score.lost)[0].classList.add('lose');
+			roundCells[score.won == 'human' ? 0 : 2].classList.add('success');
+			// roundCells[score.won == 'human' ? 2 : 0].classList.add('danger');
+			setTimeout(function () {
+				document.querySelectorAll('.' + score.won)[0].classList.remove('win');
+				document.querySelectorAll('.' + score.lost)[0].classList.remove('lose');
+			}, 2000);
+		} else {
+			// roundCells[0].classList.add('info');
+			// roundCells[2].classList.add('info');
+		}
 
+		if (endScore)
+			conclude(endScore);
+		else
+			nextRound();
 	}
 
+	document.querySelector('#game-setup').addEventListener('transitionend', function () {
+		document.querySelector('#name-input').focus();
+	});
+
+	document.querySelector('#start').addEventListener('click', function () {
+		player = new Participant('Player', document.querySelector('#name-input').value);
+		computer = new Participant();
+		resetRounds();
+		nextRound();
+	});
+
+	var choiceButtons = document.querySelectorAll('.human-choice');
+	choiceButtons[0].addEventListener('click', function() {act('paper');});
+	choiceButtons[1].addEventListener('click', function() {act('scissors');});
+	choiceButtons[2].addEventListener('click', function() {act('rock');});
+
 }
+
+paperScissorsRock();

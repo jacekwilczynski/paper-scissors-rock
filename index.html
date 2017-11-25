@@ -5,15 +5,145 @@
 	<meta name="author" content="Jacek Wilczyński">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Papers, Scissors &amp; Rock n' Roll!</title>
+	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css"> -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<link rel="stylesheet" href="css/main.css">
 	<!--[if lt IE 9]>
 	<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-	<![endif]-->
+<![endif]-->
 </head>
 <body>
-	
-	
+	<nav class="navbar navbar-default">
+		<div class="container">
+			<div class="navbar-header">
+				<div class="navbar-brand">
+					<a href="index.html">
+						<img src="images/logo.png" alt="A piece of paper, a pair of scissors, and a rock">
+					</a>
+				</div>
+				<button class="navbar-toggle collapsed" data-toggle="collapse" data-target="#menu" aria-expanded="false">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+			</div>
+			<div class="navbar-collapse collapse" id="menu">
+				<ul class="nav navbar-nav">
+					<li class="active"><a href="#play" data-toggle="tab">Play</a></li>
+					<li><a href="#about" data-toggle="tab">About</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container">
+		<div class="tab-content">
+			<div class="tab-pane fade in active" id="play">
+				<div class="tab-content">
+					<div class="jumbotron tab-pane fade in active" id="welcome">
+						<div class="container text-center">
+							<h1>Paper, Scissors &amp; Rock (n' Roll!)</h1>
+							<p>Click the button below to play.</p>
+							<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#game-setup" id="btn-new-game">New Game</button>
+						</div>
+					</div>
+					<div class="tab-pane fade" id="game">
+						<div class="row">
+							<div class="col-sm-3 human position-relative">
+								<div class="panel panel-default position-relative side-panel">
+									<div class="layer"></div>
+									<div class="panel-heading"><h3 class="panel-title human-name">Player</h3></div>
+									<div class="panel-body">
+										<button class="btn human-choice choice-button paper"><img draggable="false" src="images/paper-hand.png" alt="paper hand" class="img-responsive img-rounded"></button>
+										<button class="btn human-choice choice-button scissors"><img draggable="false" src="images/scissors-hand.png" alt="scissors hand" class="img-responsive img-rounded"></button>
+										<button class="btn human-choice choice-button rock"><img draggable="false" src="images/rock-hand.png" alt="rock hand" class="img-responsive img-rounded"></button>
+									</div>
+									<div class="panel-footer">
+										<span class="score">
+											Score:
+											<span class="human-score">0</span>
+											<span class="hidden-sm hidden-md hidden-lg">
+												against <span class="computer-score danger">0</span>
+											</span>
+										</span>
+									</div>
+								</div>
+
+								<div class="panel conclusion hidden" id="conclusion">
+									<div class="panel-heading"><h3 class="panel-title" id="conclusion-heading"></h3></div>
+									<div class="panel-body"><p id="conclusion-text"></p></div>
+									<div class="panel-footer"><button class="btn btn-primary" role="button" id="play-again">Play again</button></div>
+								</div>
+							</div>
+
+							<div class="col-sm-6 col-md-4 col-md-offset-1">
+								<div class="panel panel-default rounds-panel">
+									<div class="panel-heading"><h3 class="panel-title">Rounds</h3></div>
+									<table class="rounds table table-bordered" id="table">
+										<thead>
+											<tr>
+												<th class="human-name">Player</th>
+												<th>Round</th>
+												<th>Computer</th>
+											</tr>
+										</thead>
+									</table>
+								</div>
+							</div>
+
+							<div class="hidden-xs col-sm-3 col-md-offset-1 computer">
+								<div class="panel panel-default position-relative side-panel">
+									<div class="layer"></div>
+									<div class="panel-heading"><h3 class="panel-title">Computer</h3></div>
+									<div class="panel-body">
+										<button class="btn computer-choice choice-button paper"><img draggable="false" src="images/paper-hand.png" alt="paper hand" class="img-responsive img-rounded"></button>
+										<button class="btn computer-choice choice-button scissors"><img draggable="false" src="images/scissors-hand.png" alt="scissors hand" class="img-responsive img-rounded"></button>
+										<button class="btn computer-choice choice-button rock"><img draggable="false" src="images/rock-hand.png" alt="rock hand" class="img-responsive img-rounded"></button>
+									</div>
+									<div class="panel-footer">
+										<span class="score">
+											Score:
+											<span class="computer-score">0</span>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="tab-pane fade" id="about">
+				<div class="container">About the project...</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="game-setup" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title">Game setup</h4>
+				</div>
+				<form>
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="name">Enter your name:</label>
+							<input type="text" name="name" class="form-control" id="name-input">
+							<!-- The invisible button below's there so that the game starts if the user presses enter -->
+							<button class="hidden" data-dismiss="modal" data-toggle="tab" data-target="#game" onclick="document.querySelector('#start').click()"></button>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button class="btn btn-default" data-dismiss="modal">Cancel</button>
+						<button class="btn btn-primary btn-lg" data-dismiss="modal" data-toggle="tab" data-target="#game" id="start">Start!</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	<script src="js/main.js"></script>

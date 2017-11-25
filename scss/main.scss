@@ -1,0 +1,262 @@
+$image-path: '../images/';
+$navbar-height: 51px;
+$footer-height: 0;
+// $option-names: paper, scissors, rock;
+$option-colors: #c41e2a, #fd9115, #0077bb;
+
+@mixin bg-image($file-name) {
+	background-image: url(#{$image-path + $file-name});
+}
+
+body {
+	background: center/cover;
+	@include bg-image('paper-scissors-and-rock-on-wood.jpeg');
+	height: 100vh;
+}
+
+button {
+	outline: none !important;
+}
+
+.navbar {
+	border-radius: 0;
+	// margin-bottom: 0;
+	// height: $navbar-height;
+}
+
+.navbar-brand {
+	text-align: center;
+
+	img {
+		height: 100%;
+	}
+}
+
+#welcome {
+	background: transparent;
+	height: calc(90vh - #{$navbar-height + $footer-height});
+	margin-bottom: 0;
+
+	.container {
+		background-color: rgba(#fff, .5);
+		border-radius: 10px;
+		box-shadow: 0 0 10px rgba(#000, .5);
+		max-width: 800px;
+		padding: 50px 100px;
+	}
+}
+
+#game {
+	transition: opacity 1s;
+
+	.panel {
+		background-color: rgba(#fff, .9);
+		padding: 0;
+		transition: 1s;
+	}
+
+	.panel-title,
+	.panel-footer {
+		font-size: 20px;
+		text-align: center;
+	}
+
+	.panel-body {
+		text-align: center;
+		button {
+			margin: 20px;
+			opacity: .7;
+			padding: 15px;
+			transition: transform .5s;
+
+			&.human-choice:hover:not(.shrink-and-fade-in) {
+				box-shadow: 0 0 30px rgba(#000, .2) inset;
+				opacity: 1;
+				transform: scale(1.1, 1.1);
+			}
+
+			&.human-choice:active:not(.shrink-and-fade-in) {
+				box-shadow: 0 0 30px rgba(#000, .5);
+				opacity: 1;
+				transform: scale(.8, .8);
+			}
+
+			&.computer-choice {
+				cursor: default;
+				&.shrink-and-fade-in {
+					animation: shrink-and-fade-in-computer 3s;
+				}
+			}
+
+			&.human-choice.shrink-and-fade-in {
+					animation: shrink-and-fade-in-human 3s;
+			}
+
+			img {
+				transition: .5s;
+				max-width: 100%;
+				max-height: 15vh;
+			}
+
+			@media (max-height: 768px) {
+				margin: 2vh;
+
+				img {
+					width: calc(25vh - 100px);
+
+					@media (min-width: 992px) {
+						@media (max-height: 550px) {transform: scale(1.5, 1.5);}
+						@media (max-height: 450px) {transform: scale(2, 2);}
+						@media (max-height: 430px) {transform: scale(4, 4);}
+						@media (max-height: 310px) {transform: scale(8, 8);}
+						@media (max-height: 300px) {transform: scale(16, 16);}
+						@media (max-height: 290px) {transform: scale(32, 32);}
+					}
+				}
+			}
+
+			@media (max-width: 991px) {
+				margin: 2vw;
+
+				img {
+					width: 10vw;
+				}
+			}
+		}
+	}
+
+	.panel-footer {
+		[class*="-score"] {
+			font-weight: bold;
+		}
+
+		@media (max-width: 768px) {
+			.human-score {
+				color: #41AC6A;
+			}
+
+			.computer-score {
+				color: #c41e2a;
+			}
+		}
+	}
+
+}
+
+.choice-button {
+	background: no-repeat center/contain;
+	border-radius: 50%;
+	
+	&.paper {background-color: nth($option-colors, 1);}
+	&.scissors {background-color: nth($option-colors, 2);}
+	&.rock {background-color: nth($option-colors, 3);}
+}
+
+.position-relative {
+	position: relative;
+}
+
+.rounds-panel {
+	max-height: 80vh;
+	overflow: auto;
+}
+
+table.rounds {
+	font-size: 16px;
+
+	tr {
+		box-sizing: content-box !important;
+		min-height: 100px !important;
+
+		&.current {
+			animation: pulse 3s linear infinite;
+		}
+	}
+
+	th, td {
+		width: 20%;
+		vertical-align: middle !important;
+		text-align: center;
+
+		&:first-child,
+		&:last-child {
+			width: 40%;
+		}
+	}
+
+	.choice-button {
+		animation: grow .5s;
+		display: inline-block;
+		width: 50px;
+		height: 50px;
+	}
+}
+
+.win {
+	animation: win 1s;
+}
+
+.layer {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #c41e2a;
+	outline: 5px solid rgba(#c41e2a, .3);
+	opacity: 0;
+}
+
+.lose {
+	.layer {
+		animation: lose 1s;
+	}
+}
+
+.conclusion {
+	transition: 1s;
+	transform-origin: top;
+}
+
+.shrunk {
+	transform: scale(1, 0);
+}
+
+@keyframes pulse {
+	@for $i from 0 through 3 {
+		#{$i * 33.33%} {background-color: rgba(nth($option-colors, $i % 3 + 1), .1);}
+	}
+}
+
+@keyframes grow {
+	from {transform: scale(0, 0);}
+	to {transform: scale(1, 1);}
+}
+
+@keyframes win {
+	0% {transform: scale(1, 1);}
+	50% {transform: scale(1.1, 1.1);}
+	100% {transform: scale(1, 1);}
+}
+
+@keyframes lose {
+	0% {opacity: 0;}
+	50% {opacity: .3;}
+	100% {opacity: 0;}
+}
+
+@keyframes shrink-and-fade-in-human {
+	0% {transform: scale(.8, .8);}
+	33.32% {transform: scale(0, 0);}
+	33.33% {opacity: 0;}
+	33.34% {transform: scale(1, 1);}
+	100% {opacity: .7;}
+}
+
+@keyframes shrink-and-fade-in-computer {
+	0% {}
+	33.32% {transform: scale(0, 0);}
+	33.33% {opacity: 0;}
+	33.34% {transform: scale(1, 1);}
+	100% {opacity: .7;}
+}
